@@ -1,0 +1,5 @@
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 83(1,1): Condition always FALSE
+>>> Warning 203 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 83(1,1): Condition always TRUE
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 84(1,1): Condition always FALSE
+      Memory usage:   ROM=7%      RAM=3% - 3%
+      0 Errors,  3 Warnings.

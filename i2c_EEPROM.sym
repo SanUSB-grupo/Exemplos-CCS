@@ -1,0 +1,198 @@
+000     @SCRATCH
+001     @SCRATCH
+001     _RETURN_
+002     @SCRATCH
+003     @SCRATCH
+004     @SCRATCH
+005     @INTERRUPT_AREA
+006     @INTERRUPT_AREA
+007     @INTERRUPT_AREA
+008     @INTERRUPT_AREA
+009     @INTERRUPT_AREA
+00A     @INTERRUPT_AREA
+00B     @INTERRUPT_AREA
+00C     @INTERRUPT_AREA
+00D     @INTERRUPT_AREA
+00E     @INTERRUPT_AREA
+00F     @INTERRUPT_AREA
+010     @INTERRUPT_AREA
+011     @INTERRUPT_AREA
+012     @INTERRUPT_AREA
+013     @INTERRUPT_AREA
+014     @INTERRUPT_AREA
+015     @INTERRUPT_AREA
+016     @INTERRUPT_AREA
+017     @INTERRUPT_AREA
+018     REG
+019     EEADR
+01A     R
+01B     REGad
+01C     k
+01D-020 resultado
+021-024 tensao_lida16
+025-026 i
+027-028 j
+029-02A endereco16
+02B-02C posicao
+02D-02E valorgravado
+02F     byte1
+030     byte2
+031-033 @STRPARAM
+034     le_rtc.enderecoram
+034-035 taxa_serial.taxa
+034-037 @MUL3232.P1
+034     clock_int_4MHz.@SCRATCH1
+034     MAIN.@SCRATCH1
+035     le_rtc.dado
+035     send_hex.number
+035     MAIN.@SCRATCH2
+036-037 sendnum.sannum
+036-037 conv_dec_2bytes.valor16
+036     send_hex.hexChar
+036-037 taxa_serial.baud_sanusb
+036     escreve_eeprom.dispositivo
+036     MAIN.@SCRATCH3
+037     send_hex.i
+037-038 escreve_eeprom.endereco
+037-038 sendsw.st
+037     MAIN.@SCRATCH4
+038-03B @MUL3232.P1
+038-03B @DIV3232.P2
+038     sendnum.@SCRATCH1
+038     taxa_serial.@SCRATCH1
+038     MAIN.@SCRATCH5
+039-03A @MUL1616.P1
+039     escreve_eeprom.dado
+039     sendsw.@SCRATCH1
+039     sendnum.@SCRATCH2
+039     taxa_serial.@SCRATCH2
+039     MAIN.@SCRATCH6
+03A     @delay_ms1.P1
+03A-03B @DIV1616.P2
+03A     sendnum.@SCRATCH3
+03A     taxa_serial.@SCRATCH3
+03A     escreve_eeprom.@SCRATCH1
+03A     MAIN.@SCRATCH7
+03B-03C @MUL1616.P1
+03B     sendnum.@SCRATCH4
+03B     taxa_serial.@SCRATCH4
+03B     escreve_eeprom.@SCRATCH2
+03B     MAIN.@SCRATCH8
+03C-03D @DIV1616.P1
+03C-03F @DIV3232.P2
+03C     sendnum.@SCRATCH5
+03C     MAIN.@SCRATCH9
+03C     @MUL3232.@SCRATCH1
+03D     sendnum.@SCRATCH6
+03D     MAIN.@SCRATCH10
+03D     @MUL3232.@SCRATCH2
+03D     @MUL1616.@SCRATCH1
+03E     sendnum.@SCRATCH7
+03E     @DIV1616.@SCRATCH1
+03E     MAIN.@SCRATCH11
+03E     @MUL3232.@SCRATCH3
+03F     swputc.c
+03F     le_eeprom.dispositivo
+03F     @MUL3232.@SCRATCH4
+040-041 le_eeprom.endereco
+040     @DIV3232.@SCRATCH1
+040     @MUL3232.@SCRATCH5
+041     @DIV3232.@SCRATCH2
+041     @MUL3232.@SCRATCH6
+042     le_eeprom.dado
+042     @DIV3232.@SCRATCH3
+043     I2C_le_byte.bytelido
+043.0   i2c_le_ack.estado
+043     @DIV3232.@SCRATCH4
+043     le_eeprom.@SCRATCH1
+044     I2C_le_byte.conta
+044     @DIV3232.@SCRATCH5
+044     le_eeprom.@SCRATCH2
+045     I2C_escreve_byte.dado
+046     I2C_escreve_byte.conta
+F83     PSP_DATA
+F9D     PIE1
+F9D.5   RCIE
+FAB     RCSTA
+FAC     TXSTA
+FAC.1   TRMT
+FAD     TXREG
+FAE     RCREG
+FAF     SPBRG
+FB0     SPBRGH
+FB4.6   C1OUT
+FB4.7   C2OUT
+FB8     BAUDCON
+FB8.3   BRG16
+FBB     CCP_2_HIGH
+FBB     CCP_2
+FBB     CCP_2_LOW
+FBE     CCP_1_LOW
+FBE     CCP_1
+FBE     CCP_1_HIGH
+FD3     OSCCON
+FE9-FEA @READ_PROGRAM_MEMORY.P1
+FE9-FEA @WRITE_PROGRAM_MEMORY.P2
+FF2     INTCON
+FF6-FF8 @READ_PROGRAM_MEMORY.P1
+FF6-FF8 @WRITE_PROGRAM_MEMORY.P2
+
+ROM Allocation:
+14C0  @delay_ms1
+10A4  clock_int_4MHz
+1240  swputc
+1624  sendsw
+124C  sendnum
+11FE  @DIV1616
+1140  taxa_serial
+10C6  @DIV3232
+140A  I2C_start
+149A  I2C_stop
+157E  i2c_nack
+146E  i2c_le_ack
+143A  I2C_escreve_byte
+1544  I2C_le_byte
+14E8  escreve_eeprom
+159A  le_eeprom
+1674  le_rtc
+15EA  send_hex
+13F4  conv_dec_2bytes
+109E  recepcao_serial
+16A2  MAIN
+11A8  @MUL3232
+1656  @MUL1616
+16A2  @cinit
+
+
+User Memory space: 
+
+Project Directory:
+    C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\
+
+Project Files:
+    i2c_EEPROM.c
+    SanUSBi2c.h
+    ..\..\..\..\..\..\Program Files (x86)\PICC4\devices\18F4550.h
+    i2c_sanusb.h
+
+Units:
+    C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\i2c_EEPROM.c (main)
+
+Compiler Settings:
+    Processor:      PIC18F4550
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+
+Output Files:
+    Errors:      i2c_EEPROM.err
+    Ext Symbols: i2c_EEPROM.esym
+    INHX32:      i2c_EEPROM.hex
+    Symbols:     i2c_EEPROM.sym
+    List:        i2c_EEPROM.lst
+    Debug/COFF:  i2c_EEPROM.cof
+    Project:     i2c_EEPROM.PJT
+    Call Tree:   i2c_EEPROM.tre
+    Statistics:  i2c_EEPROM.sta

@@ -1,0 +1,166 @@
+000     @SCRATCH
+001     @SCRATCH
+001     _RETURN_
+002     @SCRATCH
+003     @SCRATCH
+004     @SCRATCH
+005     @INTERRUPT_AREA
+006     @INTERRUPT_AREA
+007     @INTERRUPT_AREA
+008     @INTERRUPT_AREA
+009     @INTERRUPT_AREA
+00A     @INTERRUPT_AREA
+00B     @INTERRUPT_AREA
+00C     @INTERRUPT_AREA
+00D     @INTERRUPT_AREA
+00E     @INTERRUPT_AREA
+00F     @INTERRUPT_AREA
+010     @INTERRUPT_AREA
+011     @INTERRUPT_AREA
+012     @INTERRUPT_AREA
+013     @INTERRUPT_AREA
+014     @INTERRUPT_AREA
+015     @INTERRUPT_AREA
+016     @INTERRUPT_AREA
+017     @INTERRUPT_AREA
+018     REG
+019     EEADR
+01A     R
+01B     REGad
+01C     k
+01D     endereco
+01E     numquant
+01F-024 comando
+025     n
+026.0   flagA4
+026.1   flagA5
+027     le_rtc.enderecoram
+027-028 taxa_serial.taxa
+027     dec_para_bcd.valord
+027     le_eeprom.dispositivo
+027     MAIN.@SCRATCH1
+028     escreve_rtc.enderecoram
+028     send_hex.number
+028-029 le_eeprom.endereco
+028     escreve_eeprom.dispositivo
+028     le_rtc.dado
+028     dec_para_bcd.@SCRATCH1
+029-02A taxa_serial.baud_sanusb
+029     escreve_rtc.dado
+029-02A escreve_eeprom.endereco
+029     send_hex.hexChar
+029     @DIV88.P1
+029     dec_para_bcd.@SCRATCH2
+02A     le_eeprom.dado
+02A     send_hex.i
+02A     @DIV88.P1
+02A     escreve_rtc.@SCRATCH1
+02B-02E @DIV3232.P1
+02B     swputc.c
+02B     I2C_le_byte.bytelido
+02B     escreve_eeprom.dado
+02B     taxa_serial.@SCRATCH1
+02B     le_eeprom.@SCRATCH1
+02B     @DIV88.@SCRATCH1
+02C     @delay_ms1.P1
+02C     I2C_le_byte.conta
+02C.0   i2c_le_ack.estado
+02C     taxa_serial.@SCRATCH2
+02C     escreve_eeprom.@SCRATCH1
+02C     le_eeprom.@SCRATCH2
+02D     taxa_serial.@SCRATCH3
+02D     escreve_eeprom.@SCRATCH2
+02E     I2C_escreve_byte.dado
+02E     taxa_serial.@SCRATCH4
+02F-032 @DIV3232.P1
+02F     I2C_escreve_byte.conta
+033     @DIV3232.@SCRATCH1
+034     @DIV3232.@SCRATCH2
+035     @DIV3232.@SCRATCH3
+036     @DIV3232.@SCRATCH4
+037     @DIV3232.@SCRATCH5
+038     recepcao_serial.@SCRATCH1
+039     recepcao_serial.@SCRATCH2
+F83     PSP_DATA
+F9D     PIE1
+F9D.5   RCIE
+FAB     RCSTA
+FAC     TXSTA
+FAC.1   TRMT
+FAD     TXREG
+FAE     RCREG
+FAF     SPBRG
+FB0     SPBRGH
+FB4.6   C1OUT
+FB4.7   C2OUT
+FB8     BAUDCON
+FB8.3   BRG16
+FBB     CCP_2_LOW
+FBB     CCP_2_HIGH
+FBB     CCP_2
+FBE     CCP_1_HIGH
+FBE     CCP_1_LOW
+FBE     CCP_1
+FD3     OSCCON
+FE9-FEA @WRITE_PROGRAM_MEMORY.P1
+FE9-FEA @READ_PROGRAM_MEMORY.P2
+FF2     INTCON
+FF6-FF8 @READ_PROGRAM_MEMORY.P1
+FF6-FF8 @WRITE_PROGRAM_MEMORY.P2
+
+ROM Allocation:
+13A2  @delay_ms1
+11B0  clock_int_4MHz
+148C  swputc
+1234  taxa_serial
+11B8  @DIV3232
+12EC  I2C_start
+137C  I2C_stop
+1444  i2c_nack
+1350  i2c_le_ack
+131C  I2C_escreve_byte
+140A  I2C_le_byte
+1522  escreve_eeprom
+14D0  le_eeprom
+13CA  escreve_rtc
+1460  le_rtc
+1498  send_hex
+12C4  dec_para_bcd
+129C  @DIV88
+109E  recepcao_serial
+1580  MAIN
+1580  @cinit
+
+
+User Memory space: 
+
+Project Directory:
+    C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\
+
+Project Files:
+    i2c_RTC.c
+    SanUSBi2c.h
+    ..\..\..\..\..\..\Program Files (x86)\PICC4\devices\18F4550.h
+    i2c_sanusb.h
+
+Units:
+    C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\i2c_RTC.c (main)
+
+Compiler Settings:
+    Processor:      PIC18F4550
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+
+Output Files:
+    Errors:      i2c_RTC.err
+    Ext Symbols: i2c_RTC.esym
+    INHX32:      i2c_RTC.hex
+    Symbols:     i2c_RTC.sym
+    List:        i2c_RTC.lst
+    Debug/COFF:  i2c_RTC.cof
+    Project:     i2c_RTC.PJT
+    Call Tree:   i2c_RTC.tre
+    Statistics:  i2c_RTC.sta

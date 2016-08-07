@@ -1,0 +1,9 @@
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 116(1,1): Condition always FALSE
+>>> Warning 203 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 117(1,1): Condition always TRUE
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 118(1,1): Condition always FALSE
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 134(1,1): Condition always FALSE
+>>> Warning 203 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 134(1,1): Condition always TRUE
+>>> Warning 204 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 135(1,1): Condition always FALSE
+>>> Warning 202 "C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\SanUSBi2c.h" Line 34(16,22): Variable never used:   comand
+      Memory usage:   ROM=11%      RAM=5% - 6%
+      0 Errors,  7 Warnings.

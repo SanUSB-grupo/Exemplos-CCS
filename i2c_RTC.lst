@@ -1,0 +1,1203 @@
+CCS PCH C Compiler, Version 4.084, 29964               20-abr-14 11:18
+
+               Filename: C:\Users\Sandro\Dropbox\Public\121007SanUSBOrig\ExemploseBibliotecasCCS\i2c_RTC.lst
+
+               ROM used: 1852 bytes (6%)
+                         Largest free fragment is 26816
+               RAM used: 40 (2%) at main() level
+                         58 (3%) worst case
+               Stack:    3 worst case (2 in main + 1 for interrupts)
+
+*
+1000:  GOTO   1580
+*
+1008:  MOVWF  05
+100A:  MOVFF  FD8,06
+100E:  MOVFF  FE0,07
+1012:  MOVLB  0
+1014:  MOVFF  FE9,0D
+1018:  MOVFF  FEA,08
+101C:  MOVFF  FE1,09
+1020:  MOVFF  FE2,0A
+1024:  MOVFF  FD9,0B
+1028:  MOVFF  FDA,0C
+102C:  MOVFF  FF3,14
+1030:  MOVFF  FF4,15
+1034:  MOVFF  FFA,16
+1038:  MOVFF  00,0F
+103C:  MOVFF  01,10
+1040:  MOVFF  02,11
+1044:  MOVFF  03,12
+1048:  MOVFF  04,13
+104C:  BTFSS  F9D.5
+104E:  GOTO   1058
+1052:  BTFSC  F9E.5
+1054:  GOTO   109E
+1058:  MOVFF  0F,00
+105C:  MOVFF  10,01
+1060:  MOVFF  11,02
+1064:  MOVFF  12,03
+1068:  MOVFF  13,04
+106C:  MOVFF  0D,FE9
+1070:  MOVFF  08,FEA
+1074:  BSF    08.7
+1076:  MOVFF  09,FE1
+107A:  MOVFF  0A,FE2
+107E:  MOVFF  0B,FD9
+1082:  MOVFF  0C,FDA
+1086:  MOVFF  14,FF3
+108A:  MOVFF  15,FF4
+108E:  MOVFF  16,FFA
+1092:  MOVF   05,W
+1094:  MOVFF  07,FE0
+1098:  MOVFF  06,FD8
+109C:  RETFIE 0
+.................... #include "SanUSBi2c.h" // Firmware para configuração e leitura por SOFTWARE do relógio DS1307 (BCD) 
+.................... ///////////////////http://br.groups.yahoo.com/group/GrupoSanUSB///////////////// 
+.................... #include <18F4550.h> //This library 18F4550.h is valid for the whole family USB PIC18Fx5xx 
+.................... //////// Standard Header file for the PIC18F4550 device //////////////// 
+.................... #device PIC18F4550 
+.................... #list 
+....................  
+.................... #device PASS_STRINGS=IN_RAM 
+.................... #byte OSCCON=0XFD3 
+.................... #byte SPBRGH=0xFB0 
+.................... #byte SPBRG=0xFAF 
+.................... #byte BAUDCON= 0xFB8 
+.................... #byte TXSTA=0xFAC 
+.................... #byte RCSTA=0xFAB 
+.................... #BYTE RCREG=0xFAE 
+.................... #BYTE TXREG=0xFAD 
+.................... #BYTE PIE1=0xF9D 
+.................... #BIT TRMT=TXSTA.1 
+.................... #BIT RCIE=PIE1.5 
+.................... #bit BRG16=BAUDCON.3 
+.................... #BYTE INTCON=0xFF2 
+....................  
+....................  
+.................... #device ADC=10 
+.................... #fuses HSPLL,PLL5, USBDIV,CPUDIV1,VREGEN,NOWDT,NOPROTECT,NOLVP,NODEBUG 
+.................... #use delay(clock=4000000)// USB standard frequency (cpu and timers 12 MIPS = 4/48MHz) 
+*
+13A2:  CLRF   FEA
+13A4:  MOVLW  2C
+13A6:  MOVWF  FE9
+13A8:  MOVF   FEF,W
+13AA:  BZ    13C8
+13AC:  MOVLW  01
+13AE:  MOVWF  01
+13B0:  CLRF   00
+13B2:  DECFSZ 00,F
+13B4:  BRA    13B2
+13B6:  DECFSZ 01,F
+13B8:  BRA    13B0
+13BA:  MOVLW  4A
+13BC:  MOVWF  00
+13BE:  DECFSZ 00,F
+13C0:  BRA    13BE
+13C2:  BRA    13C4
+13C4:  DECFSZ FEF,F
+13C6:  BRA    13AC
+13C8:  RETLW  00
+....................  
+.................... //SanUSB program memory allocation 
+.................... #define CODE_START 0x1000 
+.................... #build(reset=CODE_START, interrupt=CODE_START+0x08) 
+.................... #org 0, CODE_START-1 {} 
+....................  
+.................... unsigned char REG=0x0f, EEADR=0x33, R=0x0a, REGad=0xdf; 
+.................... unsigned char k=0; 
+....................  
+.................... void clock_int_4MHz(void)//Se for utilizado habilitar o #use delay(clock=4000000) e desabilitar //delay(clock=48000000) 
+.................... { 
+....................  OSCCON=0B01100110; //with dual clock -> cpu and timers  #use delay(clock=4000000) 
+*
+11B0:  MOVLW  66
+11B2:  MOVWF  FD3
+....................  //while(read_eeprom(0xfd)); 
+....................                            } 
+11B4:  GOTO   15B2 (RETURN)
+....................  
+.................... void swputc(char c) 
+.................... { 
+.................... while (!TRMT); 
+*
+148C:  BTFSS  FAC.1
+148E:  BRA    148C
+.................... TXREG=REG+c; 
+1490:  MOVF   2B,W
+1492:  ADDWF  18,W
+1494:  MOVWF  FAD
+.................... } 
+1496:  RETLW  00
+....................  
+.................... void sputc(unsigned char c) 
+.................... { 
+.................... while (!TRMT); 
+....................     TXREG=(c>>BRG16)+REG; 
+.................... } 
+....................  
+.................... void sendsw( char st[]){ 
+....................            for(k=0;st[k]!='\0';k++) {swputc(st[k]);} 
+....................                               } 
+....................  
+.................... void sends(unsigned char st[]){ 
+....................     for(k=0;st[k]!='\0';k++) {sputc(st[k]);} 
+.................... } 
+....................  
+.................... void sendnum(unsigned int16 sannum) 
+.................... { 
+....................    if(sannum > 9999) { 
+....................         swputc(((sannum / 10000) % 10)+REG+'0');  
+....................     } 
+....................    if(sannum > 999) { 
+....................         swputc(((sannum / 1000) % 10)+REG+'0'); 
+....................     } 
+....................     if(sannum > 99) { 
+....................         swputc(((sannum / 100) % 10)+REG+'0'); 
+....................     } 
+....................     if(sannum > 9) { 
+....................         swputc(((sannum / 10) % 10)+REG+'0'); 
+....................     } 
+....................     swputc((sannum % 10)+REG+'0') ; 
+.................... } 
+....................      
+.................... /*************************************************************************************/ 
+.................... void taxa_serial(unsigned long taxa) {  
+.................... unsigned long baud_sanusb;  
+....................      set_tris_c(0b10111111);  
+*
+1234:  MOVLW  BF
+1236:  MOVWF  F94
+....................      TXSTA = 0x24;        
+1238:  MOVLW  24
+123A:  MOVWF  FAC
+....................      RCSTA = 0x90;        
+123C:  MOVLW  90
+123E:  MOVWF  FAB
+....................      BAUDCON = 0x08;      
+1240:  MOVLW  08
+1242:  MOVWF  FB8
+....................  
+....................   baud_sanusb = ((4000000/4)/ taxa) - 1;  
+1244:  CLRF   2E
+1246:  MOVLW  0F
+1248:  MOVWF  2D
+124A:  MOVLW  42
+124C:  MOVWF  2C
+124E:  MOVLW  40
+1250:  MOVWF  2B
+1252:  CLRF   32
+1254:  CLRF   31
+1256:  MOVFF  28,30
+125A:  MOVFF  27,2F
+125E:  BRA    11B8
+1260:  MOVLW  01
+1262:  SUBWF  00,W
+1264:  MOVWF  29
+1266:  MOVLW  00
+1268:  SUBWFB 01,W
+126A:  MOVWF  2A
+....................   SPBRGH = (unsigned char)(baud_sanusb >> 8); 
+126C:  MOVF   2A,W
+126E:  MOVWF  FB0
+....................   SPBRG = (unsigned char)baud_sanusb; 
+1270:  MOVFF  29,FAF
+....................   REGad=R*(EEADR>>1)+3; 
+1274:  BCF    FD8.0
+1276:  RRCF   19,W
+1278:  MULWF  1A
+127A:  MOVF   FF3,W
+127C:  ADDLW  03
+127E:  MOVWF  1B
+....................   REG=read_eeprom(REGad); 
+1280:  MOVFF  FF2,2B
+1284:  BCF    FF2.7
+1286:  MOVFF  1B,FA9
+128A:  BCF    FA6.6
+128C:  BCF    FA6.7
+128E:  BSF    FA6.0
+1290:  MOVF   FA8,W
+1292:  BTFSC  2B.7
+1294:  BSF    FF2.7
+1296:  MOVWF  18
+....................                                    } 
+1298:  GOTO   15BA (RETURN)
+....................                                     
+....................                                     
+....................  
+....................  
+....................  
+.................... #include "i2c_sanusb.h"//Biblioteca de funcoes I2C com a placa SanUSB. RB0(SDA) e RB1(SCL) 
+.................... /**********http://br.groups.yahoo.com/group/GrupoSanUSB/*************************/ 
+.................... // Definições dos pinos de comunicação I2C SanUSB 
+....................  
+....................    #ifndef scl 
+....................    #define scl  pin_b1             // pino de clock 
+....................    #define sda  pin_b0              // pino de dados 
+....................    //#define scl  pin_d5              // pino de clock 
+....................    //#define sda  pin_d6              // pino de dados 
+....................  
+....................    #define EEPROM_SIZE 32768       // tamanho em bytes da memória EEPROM 
+....................    #endif 
+....................  
+....................    #define seta_scl   output_float(scl)      // seta o pino scl 
+....................    #define apaga_scl  output_low(scl)      // apaga o pino scl 
+....................    #define seta_sda   output_float(sda)      // seta o pino sda 
+....................    #define apaga_sda  output_low(sda)      // apaga o pino sda 
+....................  
+.................... // RAM do RTC DS1307 
+.................... #define seg  0x00 
+.................... #define min  0x01 
+.................... #define hora 0x02 
+.................... #define dia  0x04 
+.................... #define mes  0x05 
+.................... #define ano  0x06 
+.................... /******************************************************************************/ 
+.................... //SUB-ROTINAS DA COMUNICAÇÃO I2C 
+....................  
+....................    void I2C_start(void) 
+....................    // coloca o barramento na condição de start 
+....................    { 
+....................       apaga_scl;     // coloca a linha de clock em nível 0 
+*
+12EC:  BCF    F93.1
+12EE:  BCF    F8A.1
+....................       delay_us(5); 
+12F0:  BRA    12F2
+12F2:  BRA    12F4
+12F4:  NOP   
+....................       seta_sda;   // coloca a linha de dados em alta impedância (1) 
+12F6:  BSF    F93.0
+....................       delay_us(5); 
+12F8:  BRA    12FA
+12FA:  BRA    12FC
+12FC:  NOP   
+....................       seta_scl;   // coloca a linha de clock em alta impedância (1) 
+12FE:  BSF    F93.1
+....................       delay_us(5); 
+1300:  BRA    1302
+1302:  BRA    1304
+1304:  NOP   
+....................       apaga_sda;   // coloca a linha de dados em nível 0 
+1306:  BCF    F93.0
+1308:  BCF    F8A.0
+....................       delay_us(5); 
+130A:  BRA    130C
+130C:  BRA    130E
+130E:  NOP   
+....................       apaga_scl;   // coloca a linha de clock em nível 0 
+1310:  BCF    F93.1
+1312:  BCF    F8A.1
+....................       delay_us(5); 
+1314:  BRA    1316
+1316:  BRA    1318
+1318:  NOP   
+....................    } 
+131A:  RETLW  00
+....................  
+....................    void I2C_stop(void) 
+....................    // coloca o barramento na condição de stop 
+....................    { 
+....................       apaga_scl;   // coloca a linha de clock em nível 0 
+*
+137C:  BCF    F93.1
+137E:  BCF    F8A.1
+....................       delay_us(5); 
+1380:  BRA    1382
+1382:  BRA    1384
+1384:  NOP   
+....................       apaga_sda;   // coloca a linha de dados em nível 0 
+1386:  BCF    F93.0
+1388:  BCF    F8A.0
+....................       delay_us(5); 
+138A:  BRA    138C
+138C:  BRA    138E
+138E:  NOP   
+....................       seta_scl;   // coloca a linha de clock em alta impedância (1) 
+1390:  BSF    F93.1
+....................       delay_us(5); 
+1392:  BRA    1394
+1394:  BRA    1396
+1396:  NOP   
+....................       seta_sda;   // coloca a linha de dados em alta impedância (1) 
+1398:  BSF    F93.0
+....................       delay_us(5); 
+139A:  BRA    139C
+139C:  BRA    139E
+139E:  NOP   
+....................    } 
+13A0:  RETLW  00
+....................  
+....................    void i2c_ack() 
+....................    // coloca sinal de reconhecimento (ack) no barramento 
+....................    { 
+....................       apaga_sda;   // coloca a linha de dados em nível 0 
+....................       delay_us(5); 
+....................       seta_scl;   // coloca a linha de clock em alta impedância (1) 
+....................       delay_us(5); 
+....................       apaga_scl;   // coloca a linha de clock em nível 0 
+....................       delay_us(5); 
+....................       seta_sda;   // coloca a linha de dados em alta impedância (1) 
+....................       delay_us(5); 
+....................    } 
+....................  
+....................    void i2c_nack() 
+....................    // coloca sinal de não reconhecimento (nack) no barramento 
+....................    { 
+....................       seta_sda;   // coloca a linha de dados em alta impedância (1) 
+*
+1444:  BSF    F93.0
+....................       delay_us(5); 
+1446:  BRA    1448
+1448:  BRA    144A
+144A:  NOP   
+....................       seta_scl;   // coloca a linha de clock em alta impedância (1) 
+144C:  BSF    F93.1
+....................       delay_us(5); 
+144E:  BRA    1450
+1450:  BRA    1452
+1452:  NOP   
+....................       apaga_scl;   // coloca a linha de clock em nível 0 
+1454:  BCF    F93.1
+1456:  BCF    F8A.1
+....................       delay_us(5); 
+1458:  BRA    145A
+145A:  BRA    145C
+145C:  NOP   
+....................    } 
+145E:  RETLW  00
+....................  
+....................    boolean i2c_le_ack() 
+....................    // efetua a leitura do sinal de ack/nack 
+....................    { 
+....................       boolean estado; 
+....................       seta_sda;    // coloca a linha de dados em alta impedância (1) 
+*
+1350:  BSF    F93.0
+....................       delay_us(5); 
+1352:  BRA    1354
+1354:  BRA    1356
+1356:  NOP   
+....................       seta_scl;   // coloca a linha de clock em alta impedância (1) 
+1358:  BSF    F93.1
+....................       delay_us(5); 
+135A:  BRA    135C
+135C:  BRA    135E
+135E:  NOP   
+....................       estado = input(sda);   // lê o bit (ack/nack) 
+1360:  BSF    F93.0
+1362:  BCF    2C.0
+1364:  BTFSC  F81.0
+1366:  BSF    2C.0
+....................       apaga_scl;   // coloca a linha de clock em nível 0 
+1368:  BCF    F93.1
+136A:  BCF    F8A.1
+....................       delay_us(5); 
+136C:  BRA    136E
+136E:  BRA    1370
+1370:  NOP   
+....................       return estado; 
+1372:  MOVLW  00
+1374:  BTFSC  2C.0
+1376:  MOVLW  01
+1378:  MOVWF  01
+....................    } 
+137A:  RETLW  00
+....................  
+....................    void I2C_escreve_byte(unsigned char dado) 
+....................    { 
+....................    // envia um byte pelo barramento I2C 
+....................       int conta=8; 
+*
+131C:  MOVLW  08
+131E:  MOVWF  2F
+....................       apaga_scl;      // coloca SCL em 0 
+1320:  BCF    F93.1
+1322:  BCF    F8A.1
+....................       while (conta) 
+....................       { 
+1324:  MOVF   2F,F
+1326:  BZ    134C
+....................          // envia primeiro o MSB 
+....................          if (shift_left(&dado,1,0)) seta_sda; else apaga_sda; 
+1328:  BCF    FD8.0
+132A:  RLCF   2E,F
+132C:  BNC   1332
+132E:  BSF    F93.0
+1330:  BRA    1336
+1332:  BCF    F93.0
+1334:  BCF    F8A.0
+....................          // dá um pulso em scl 
+....................          seta_scl; 
+1336:  BSF    F93.1
+....................          delay_us(5); 
+1338:  BRA    133A
+133A:  BRA    133C
+133C:  NOP   
+....................          conta--; 
+133E:  DECF   2F,F
+....................          apaga_scl; 
+1340:  BCF    F93.1
+1342:  BCF    F8A.1
+....................          delay_us(5); 
+1344:  BRA    1346
+1346:  BRA    1348
+1348:  NOP   
+....................       } 
+134A:  BRA    1324
+....................       // ativa sda 
+....................       seta_sda; 
+134C:  BSF    F93.0
+....................    } 
+134E:  RETLW  00
+....................  
+....................    unsigned char I2C_le_byte() 
+....................    // recebe um byte pelo barramento I2C 
+....................    { 
+....................       unsigned char bytelido, conta = 8; 
+*
+140A:  MOVLW  08
+140C:  MOVWF  2C
+....................       bytelido = 0; 
+140E:  CLRF   2B
+....................       apaga_scl; 
+1410:  BCF    F93.1
+1412:  BCF    F8A.1
+....................       delay_us(5); 
+1414:  BRA    1416
+1416:  BRA    1418
+1418:  NOP   
+....................       seta_sda; 
+141A:  BSF    F93.0
+....................       delay_us(5); 
+141C:  BRA    141E
+141E:  BRA    1420
+1420:  NOP   
+....................       while (conta) 
+....................       { 
+1422:  MOVF   2C,F
+1424:  BZ    143E
+....................          // ativa scl 
+....................          seta_scl; 
+1426:  BSF    F93.1
+....................          // lê o bit em sda, deslocando em bytelido 
+....................          shift_left(&bytelido,1,input(sda)); 
+1428:  BSF    F93.0
+142A:  BTFSC  F81.0
+142C:  BRA    1432
+142E:  BCF    FD8.0
+1430:  BRA    1434
+1432:  BSF    FD8.0
+1434:  RLCF   2B,F
+....................          conta--; 
+1436:  DECF   2C,F
+....................          // desativa scl 
+....................          apaga_scl; 
+1438:  BCF    F93.1
+143A:  BCF    F8A.1
+....................       } 
+143C:  BRA    1422
+....................       return bytelido; 
+143E:  MOVFF  2B,01
+....................    } 
+1442:  RETLW  00
+....................  
+....................    void escreve_eeprom(byte dispositivo, long endereco, byte dado) 
+....................    // Escreve um dado em um endereço do dispositivo 
+....................    // dispositivo - é o endereço do dispositivo escravo (0 - 7) 
+....................    // endereco - é o endereço da memória a ser escrito 
+....................    // dado - é a informação a ser armazenada 
+....................    { 
+....................       if (dispositivo>7) dispositivo = 7; 
+*
+1522:  MOVF   28,W
+1524:  SUBLW  07
+1526:  BC    152C
+1528:  MOVLW  07
+152A:  MOVWF  28
+....................       i2c_start(); 
+152C:  RCALL  12EC
+....................       i2c_escreve_byte(0xa0 | (dispositivo << 1)); // endereça o dispositivo 
+152E:  BCF    FD8.0
+1530:  RLCF   28,W
+1532:  IORLW  A0
+1534:  MOVWF  2C
+1536:  MOVWF  2E
+1538:  RCALL  131C
+....................       i2c_le_ack(); 
+153A:  RCALL  1350
+....................       i2c_escreve_byte(endereco >> 8);   // parte alta do endereço 
+153C:  MOVFF  2A,2C
+1540:  CLRF   2D
+1542:  MOVFF  2A,2E
+1546:  RCALL  131C
+....................       i2c_le_ack(); 
+1548:  RCALL  1350
+....................       i2c_escreve_byte(endereco);   // parte baixa do endereço 
+154A:  MOVFF  29,2E
+154E:  RCALL  131C
+....................       i2c_le_ack(); 
+1550:  RCALL  1350
+....................       i2c_escreve_byte(dado);         // dado a ser escrito 
+1552:  MOVFF  2B,2E
+1556:  RCALL  131C
+....................       i2c_le_ack(); 
+1558:  RCALL  1350
+....................       i2c_stop(); 
+155A:  RCALL  137C
+....................       while(read_eeprom(0xfd)); 
+155C:  MOVFF  FF2,2C
+1560:  BCF    FF2.7
+1562:  MOVLW  FD
+1564:  MOVWF  FA9
+1566:  BCF    FA6.6
+1568:  BCF    FA6.7
+156A:  BSF    FA6.0
+156C:  MOVF   FA8,W
+156E:  BTFSC  2C.7
+1570:  BSF    FF2.7
+1572:  XORLW  00
+1574:  BNZ   155C
+....................       delay_ms(10); // aguarda a programação da memória 
+1576:  MOVLW  0A
+1578:  MOVWF  2C
+157A:  RCALL  13A2
+....................    } 
+157C:  GOTO   172A (RETURN)
+....................  
+....................    byte le_eeprom(byte dispositivo, long int endereco) 
+....................    // Lê um dado de um endereço especificado no dispositivo 
+....................    // dispositivo - é o endereço do dispositivo escravo (0 - 7) 
+....................    // endereco - é o endereço da memória a ser escrito 
+....................    { 
+....................       byte dado; 
+....................       if (dispositivo>7) dispositivo = 7; 
+*
+14D0:  MOVF   27,W
+14D2:  SUBLW  07
+14D4:  BC    14DA
+14D6:  MOVLW  07
+14D8:  MOVWF  27
+....................       i2c_start(); 
+14DA:  RCALL  12EC
+....................       i2c_escreve_byte(0xa0 | (dispositivo << 1)); // endereça o dispositivo 
+14DC:  BCF    FD8.0
+14DE:  RLCF   27,W
+14E0:  IORLW  A0
+14E2:  MOVWF  2B
+14E4:  MOVWF  2E
+14E6:  RCALL  131C
+....................       i2c_le_ack(); 
+14E8:  RCALL  1350
+....................       i2c_escreve_byte((endereco >> 8));   // envia a parte alta do endereço 
+14EA:  MOVFF  29,2B
+14EE:  CLRF   2C
+14F0:  MOVFF  29,2E
+14F4:  RCALL  131C
+....................       i2c_le_ack(); 
+14F6:  RCALL  1350
+....................       i2c_escreve_byte(endereco);   // envia a parte baixa do endereço 
+14F8:  MOVFF  28,2E
+14FC:  RCALL  131C
+....................       i2c_le_ack(); 
+14FE:  RCALL  1350
+....................       i2c_start(); 
+1500:  RCALL  12EC
+....................       // envia comando de leitura 
+....................       i2c_escreve_byte(0xa1 | (dispositivo << 1)); 
+1502:  BCF    FD8.0
+1504:  RLCF   27,W
+1506:  IORLW  A1
+1508:  MOVWF  2B
+150A:  MOVWF  2E
+150C:  RCALL  131C
+....................       i2c_le_ack(); 
+150E:  RCALL  1350
+....................       dado = i2c_le_byte();   // lê o dado 
+1510:  RCALL  140A
+1512:  MOVFF  01,2A
+....................       i2c_nack(); 
+1516:  RCALL  1444
+....................       i2c_stop(); 
+1518:  RCALL  137C
+....................       return dado; 
+151A:  MOVFF  2A,01
+....................    } 
+151E:  GOTO   1708 (RETURN)
+.................... /******************************************************************************/ 
+.................... //******************************************************************************/ 
+.................... void escreve_rtc(byte enderecoram, byte dado) 
+.................... // Escreve um dado em um endereço do dispositivo 
+.................... // endereco - é o endereço da memória a ser escrito 
+.................... // dado - é a informação a ser armazenada 
+.................... { 
+....................    i2c_start(); 
+*
+13CA:  RCALL  12EC
+....................    i2c_escreve_byte(0xd0); 
+13CC:  MOVLW  D0
+13CE:  MOVWF  2E
+13D0:  RCALL  131C
+....................    i2c_le_ack(); 
+13D2:  RCALL  1350
+....................    i2c_escreve_byte(enderecoram);   // parte baixa do endereço de 16 bits 
+13D4:  MOVFF  28,2E
+13D8:  RCALL  131C
+....................    i2c_le_ack(); 
+13DA:  RCALL  1350
+....................    i2c_escreve_byte(dado);         // dado a ser escrito 
+13DC:  MOVFF  29,2E
+13E0:  RCALL  131C
+....................    i2c_le_ack(); 
+13E2:  RCALL  1350
+....................    i2c_stop(); 
+13E4:  RCALL  137C
+....................    while(read_eeprom(0xfd)); 
+13E6:  MOVFF  FF2,2A
+13EA:  BCF    FF2.7
+13EC:  MOVLW  FD
+13EE:  MOVWF  FA9
+13F0:  BCF    FA6.6
+13F2:  BCF    FA6.7
+13F4:  BSF    FA6.0
+13F6:  MOVF   FA8,W
+13F8:  BTFSC  2A.7
+13FA:  BSF    FF2.7
+13FC:  XORLW  00
+13FE:  BNZ   13E6
+....................    delay_ms(10); // aguarda a programação da memória 
+1400:  MOVLW  0A
+1402:  MOVWF  2C
+1404:  RCALL  13A2
+.................... } 
+1406:  GOTO   15F8 (RETURN)
+.................... byte le_rtc(int enderecoram) 
+.................... // Lê um dado de um endereço especificado no dispositivo 
+.................... // dispositivo - é o endereço do dispositivo escravo (0 - 7) 
+.................... // endereco - é o endereço da memória a ser escrito 
+.................... { 
+....................    byte dado; 
+....................    i2c_start(); 
+*
+1460:  RCALL  12EC
+....................    i2c_escreve_byte(0xd0); // endereça o dispositivo e colocando leitura 0xd1 
+1462:  MOVLW  D0
+1464:  MOVWF  2E
+1466:  RCALL  131C
+....................    i2c_le_ack(); 
+1468:  RCALL  1350
+....................    i2c_escreve_byte(enderecoram);   // envia a parte baixa do endereço 
+146A:  MOVFF  27,2E
+146E:  RCALL  131C
+....................    i2c_le_ack(); 
+1470:  RCALL  1350
+....................    i2c_start(); 
+1472:  RCALL  12EC
+....................    // envia comando de leitura 
+....................    i2c_escreve_byte(0xd1); // Coloca o LSB (R\W) em estado de leitura 
+1474:  MOVLW  D1
+1476:  MOVWF  2E
+1478:  RCALL  131C
+....................    i2c_le_ack(); 
+147A:  RCALL  1350
+....................    dado = i2c_le_byte();   // lê o dado 
+147C:  RCALL  140A
+147E:  MOVFF  01,28
+....................    i2c_nack(); 
+1482:  RCALL  1444
+....................    i2c_stop(); 
+1484:  RCALL  137C
+....................    return dado; 
+1486:  MOVFF  28,01
+.................... } 
+148A:  RETLW  00
+....................  
+.................... void send_hex(unsigned char number) 
+.................... { 
+....................     unsigned char hexChar; 
+....................     char i; 
+....................     for(i = 0; i < 2; i++) 
+*
+1498:  CLRF   2A
+149A:  MOVF   2A,W
+149C:  SUBLW  01
+149E:  BNC   14CE
+....................     { 
+....................         if(i == 0) 
+14A0:  MOVF   2A,F
+14A2:  BNZ   14AE
+....................             hexChar = number >> 4; 
+14A4:  SWAPF  28,W
+14A6:  MOVWF  29
+14A8:  MOVLW  0F
+14AA:  ANDWF  29,F
+....................         else 
+14AC:  BRA    14B4
+....................             hexChar = number & 0x0F; 
+14AE:  MOVF   28,W
+14B0:  ANDLW  0F
+14B2:  MOVWF  29
+....................         if(hexChar < 10) 
+14B4:  MOVF   29,W
+14B6:  SUBLW  09
+14B8:  BNC   14C0
+....................             hexChar = hexChar + '0'; 
+14BA:  MOVLW  30
+14BC:  ADDWF  29,F
+....................         else 
+14BE:  BRA    14C4
+....................             hexChar = hexChar + ('A' - 10); 
+14C0:  MOVLW  37
+14C2:  ADDWF  29,F
+....................         swputc(hexChar); 
+14C4:  MOVFF  29,2B
+14C8:  RCALL  148C
+....................     } 
+14CA:  INCF   2A,F
+14CC:  BRA    149A
+.................... } 
+14CE:  RETLW  00
+....................  
+.................... /************************************************************************************************ 
+.................... * Conversão BCD P/ DECIMAL 
+.................... ************************************************************************************************/ 
+.................... unsigned char bcd_para_dec(unsigned char valorb) 
+.................... { 
+.................... unsigned char temp; 
+.................... temp = (valorb & 0b00001111); 
+.................... temp = (REG+temp) + ((valorb >> 4) * 10); 
+.................... return(temp); 
+.................... } 
+.................... /************************************************************************************************* 
+.................... * Conversão DECIMAL p/ BCD 
+.................... ************************************************************************************************/ 
+.................... unsigned char dec_para_bcd(unsigned char valord) 
+.................... { 
+.................... return((0x10*(valord/10))+(valord%10)+REG); 
+*
+12C4:  MOVFF  27,29
+12C8:  MOVLW  0A
+12CA:  MOVWF  2A
+12CC:  RCALL  129C
+12CE:  MOVF   01,W
+12D0:  MULLW  10
+12D2:  MOVFF  FF3,28
+12D6:  MOVFF  27,29
+12DA:  MOVLW  0A
+12DC:  MOVWF  2A
+12DE:  RCALL  129C
+12E0:  MOVF   00,W
+12E2:  ADDWF  28,W
+12E4:  ADDWF  18,W
+12E6:  MOVWF  01
+.................... } 
+12E8:  GOTO   15EA (RETURN)
+....................  
+....................  
+.................... //Apostila disponível em https://dl.dropboxusercontent.com/u/101922388/ApostilaSanUSB/Apostila_SanUSB_CCS.pdf 
+....................  
+.................... unsigned char endereco, numquant=0; 
+.................... unsigned char  comando[6], n=0; 
+.................... short int flagA4=0, flagA5=0; 
+....................  
+.................... #INT_RDA 
+.................... void recepcao_serial() 
+.................... {     comando[n] = RCREG;  
+*
+109E:  CLRF   03
+10A0:  MOVF   25,W
+10A2:  ADDLW  1F
+10A4:  MOVWF  FE9
+10A6:  MOVLW  00
+10A8:  ADDWFC 03,W
+10AA:  MOVWF  FEA
+10AC:  MOVFF  FAE,FEF
+....................  
+....................      //////////FUNCAO 4: CONFIGURA RELÓGIO////////////////////Ex: Digitar A4H09 (Hora = 09) , A4D15 (Dia = 15). 
+....................      if (comando[n]=='A'){n=0;comando[0] = 'A';} //UTILIZAR VALORES DECIMAIS EM DOIS DIGITOS. ex:06, 23, 15, etc. 
+10B0:  CLRF   03
+10B2:  MOVF   25,W
+10B4:  ADDLW  1F
+10B6:  MOVWF  FE9
+10B8:  MOVLW  00
+10BA:  ADDWFC 03,W
+10BC:  MOVWF  FEA
+10BE:  MOVF   FEF,W
+10C0:  SUBLW  41
+10C2:  BNZ   10CA
+10C4:  CLRF   25
+10C6:  MOVLW  41
+10C8:  MOVWF  1F
+....................  
+....................          if ( comando[1]== '4' && comando[2]== 'H' && n==2) { endereco=2;} //Escreve o endereco das horas 
+10CA:  MOVF   20,W
+10CC:  SUBLW  34
+10CE:  BNZ   10E0
+10D0:  MOVF   21,W
+10D2:  SUBLW  48
+10D4:  BNZ   10E0
+10D6:  MOVF   25,W
+10D8:  SUBLW  02
+10DA:  BNZ   10E0
+10DC:  MOVLW  02
+10DE:  MOVWF  1D
+....................          if ( comando[1]== '4' && comando[2]== 'M' && n==2) { endereco=1;} //Escreve o endereco dos minutos 
+10E0:  MOVF   20,W
+10E2:  SUBLW  34
+10E4:  BNZ   10F6
+10E6:  MOVF   21,W
+10E8:  SUBLW  4D
+10EA:  BNZ   10F6
+10EC:  MOVF   25,W
+10EE:  SUBLW  02
+10F0:  BNZ   10F6
+10F2:  MOVLW  01
+10F4:  MOVWF  1D
+....................          if ( comando[1]== '4' && comando[2]== 'S' && n==2) { endereco=0;} //Escreve o endereco dos segundos 
+10F6:  MOVF   20,W
+10F8:  SUBLW  34
+10FA:  BNZ   110A
+10FC:  MOVF   21,W
+10FE:  SUBLW  53
+1100:  BNZ   110A
+1102:  MOVF   25,W
+1104:  SUBLW  02
+1106:  BTFSC  FD8.2
+1108:  CLRF   1D
+....................          if ( comando[1]== '4' && comando[2]== 'D' && n==2) { endereco=4;} //Escreve o endereco do dia 
+110A:  MOVF   20,W
+110C:  SUBLW  34
+110E:  BNZ   1120
+1110:  MOVF   21,W
+1112:  SUBLW  44
+1114:  BNZ   1120
+1116:  MOVF   25,W
+1118:  SUBLW  02
+111A:  BNZ   1120
+111C:  MOVLW  04
+111E:  MOVWF  1D
+....................          if ( comando[1]== '4' && comando[2]== 'N' && n==2) { endereco=5;} //Escreve o endereco do mes 
+1120:  MOVF   20,W
+1122:  SUBLW  34
+1124:  BNZ   1136
+1126:  MOVF   21,W
+1128:  SUBLW  4E
+112A:  BNZ   1136
+112C:  MOVF   25,W
+112E:  SUBLW  02
+1130:  BNZ   1136
+1132:  MOVLW  05
+1134:  MOVWF  1D
+....................          if ( comando[1]== '4' && comando[2]== 'Y' && n==2) { endereco=6;} //Escreve o endereco do ano 
+1136:  MOVF   20,W
+1138:  SUBLW  34
+113A:  BNZ   114C
+113C:  MOVF   21,W
+113E:  SUBLW  59
+1140:  BNZ   114C
+1142:  MOVF   25,W
+1144:  SUBLW  02
+1146:  BNZ   114C
+1148:  MOVLW  06
+114A:  MOVWF  1D
+....................           
+....................          if ( comando[1]== '4' && comando[3]>='0'&&comando[3]<='9'&& n==3) {numquant=(comando[3]-0x30);} 
+114C:  MOVF   20,W
+114E:  SUBLW  34
+1150:  BNZ   116A
+1152:  MOVF   22,W
+1154:  SUBLW  2F
+1156:  BC    116A
+1158:  MOVF   22,W
+115A:  SUBLW  39
+115C:  BNC   116A
+115E:  MOVF   25,W
+1160:  SUBLW  03
+1162:  BNZ   116A
+1164:  MOVLW  30
+1166:  SUBWF  22,W
+1168:  MOVWF  1E
+....................          if ( comando[1]== '4' && comando[4]>='0'&&comando[4]<='9'&& n==4) {numquant=numquant*10+(comando[4]-0x30);                                                                          
+116A:  MOVF   20,W
+116C:  SUBLW  34
+116E:  BNZ   1194
+1170:  MOVF   23,W
+1172:  SUBLW  2F
+1174:  BC    1194
+1176:  MOVF   23,W
+1178:  SUBLW  39
+117A:  BNC   1194
+117C:  MOVF   25,W
+117E:  SUBLW  04
+1180:  BNZ   1194
+1182:  MOVF   1E,W
+1184:  MULLW  0A
+1186:  MOVFF  FF3,38
+118A:  MOVLW  30
+118C:  SUBWF  23,W
+118E:  ADDWF  38,W
+1190:  MOVWF  1E
+....................                                                                             flagA4=1; 
+1192:  BSF    26.0
+....................                                                                             } 
+....................  
+....................      //////////////////////FUNCAO 5: LÊ RELÓGIO////////////////////////////Ex: A5- Lê o relógio e o calendário 
+....................          if (comando[1]== '5' && n==1){flagA5=1;} 
+1194:  MOVF   20,W
+1196:  SUBLW  35
+1198:  BNZ   11A0
+119A:  DECFSZ 25,W
+119C:  BRA    11A0
+119E:  BSF    26.1
+....................  
+....................          ++n; if(n>=5){n=0;} 
+11A0:  INCF   25,F
+11A2:  MOVF   25,W
+11A4:  SUBLW  04
+11A6:  BTFSS  FD8.0
+11A8:  CLRF   25
+....................     
+.................... } 
+....................  
+11AA:  BCF    F9E.5
+11AC:  GOTO   1058
+.................... void main(){ 
+*
+1580:  CLRF   FF8
+1582:  BCF    FD0.7
+1584:  BSF    08.7
+1586:  CLRF   FEA
+1588:  CLRF   FE9
+158A:  MOVF   FC1,W
+158C:  ANDLW  C0
+158E:  IORLW  0F
+1590:  MOVWF  FC1
+1592:  MOVLW  07
+1594:  MOVWF  FB4
+1596:  MOVLW  0F
+1598:  MOVWF  18
+159A:  MOVLW  33
+159C:  MOVWF  19
+159E:  MOVLW  0A
+15A0:  MOVWF  1A
+15A2:  MOVLW  DF
+15A4:  MOVWF  1B
+15A6:  CLRF   1C
+15A8:  CLRF   1E
+15AA:  CLRF   25
+15AC:  BCF    26.0
+15AE:  BCF    26.1
+....................     clock_int_4MHz(); 
+15B0:  BRA    11B0
+....................     taxa_serial(19200); 
+15B2:  MOVLW  4B
+15B4:  MOVWF  28
+15B6:  CLRF   27
+15B8:  BRA    1234
+....................     enable_interrupts(GLOBAL); 
+15BA:  MOVLW  C0
+15BC:  IORWF  FF2,F
+....................     enable_interrupts(INT_RDA); 
+15BE:  BSF    F9D.5
+....................     setup_adc_ports(AN0);  //Habilita entradas analógicas - A0 
+15C0:  MOVF   FC1,W
+15C2:  ANDLW  C0
+15C4:  IORLW  0E
+15C6:  MOVWF  FC1
+....................     setup_adc(ADC_CLOCK_INTERNAL); 
+15C8:  BSF    FC0.0
+15CA:  BSF    FC0.1
+15CC:  BSF    FC0.2
+15CE:  BSF    FC0.7
+15D0:  BSF    FC2.0
+....................     set_adc_channel(0); 
+15D2:  MOVLW  00
+15D4:  MOVWF  01
+15D6:  MOVF   FC2,W
+15D8:  ANDLW  C3
+15DA:  IORWF  01,W
+15DC:  MOVWF  FC2
+....................  
+....................     while(true){ 
+....................        
+....................         if (flagA4){ flagA4=0; //Comandos A4 para Configurar o RTC 
+15DE:  BTFSS  26.0
+15E0:  BRA    1674
+15E2:  BCF    26.0
+....................                 escreve_rtc(endereco, dec_para_bcd(numquant)); //Escrever em BCD no RTC 
+15E4:  MOVFF  1E,27
+15E8:  BRA    12C4
+15EA:  MOVFF  01,27
+15EE:  MOVFF  1D,28
+15F2:  MOVFF  01,29
+15F6:  BRA    13CA
+....................                 send_hex(le_rtc(hora)); swputc (':');     //Envia resultado via serial por bluetooth ou qualquer outro modem. 
+15F8:  MOVLW  02
+15FA:  MOVWF  27
+15FC:  RCALL  1460
+15FE:  MOVFF  01,27
+1602:  MOVFF  01,28
+1606:  RCALL  1498
+1608:  MOVLW  3A
+160A:  MOVWF  2B
+160C:  RCALL  148C
+....................                 send_hex(le_rtc(min));  swputc (':');     //Exemplo de resposta: 18:49:37 19/04/14 
+160E:  MOVLW  01
+1610:  MOVWF  27
+1612:  RCALL  1460
+1614:  MOVFF  01,27
+1618:  MOVFF  01,28
+161C:  RCALL  1498
+161E:  MOVLW  3A
+1620:  MOVWF  2B
+1622:  RCALL  148C
+....................                 send_hex(le_rtc(seg));  swputc (' '); 
+1624:  CLRF   27
+1626:  RCALL  1460
+1628:  MOVFF  01,27
+162C:  MOVFF  01,28
+1630:  RCALL  1498
+1632:  MOVLW  20
+1634:  MOVWF  2B
+1636:  RCALL  148C
+....................                 send_hex(le_rtc(dia));  swputc ('/'); 
+1638:  MOVLW  04
+163A:  MOVWF  27
+163C:  RCALL  1460
+163E:  MOVFF  01,27
+1642:  MOVFF  01,28
+1646:  RCALL  1498
+1648:  MOVLW  2F
+164A:  MOVWF  2B
+164C:  RCALL  148C
+....................                 send_hex(le_rtc(mes));  swputc ('/'); 
+164E:  MOVLW  05
+1650:  MOVWF  27
+1652:  RCALL  1460
+1654:  MOVFF  01,27
+1658:  MOVFF  01,28
+165C:  RCALL  1498
+165E:  MOVLW  2F
+1660:  MOVWF  2B
+1662:  RCALL  148C
+....................                 send_hex(le_rtc(ano)); 
+1664:  MOVLW  06
+1666:  MOVWF  27
+1668:  RCALL  1460
+166A:  MOVFF  01,27
+166E:  MOVFF  01,28
+1672:  RCALL  1498
+....................                     } 
+....................  
+....................         if (flagA5){ flagA5=0; //BCD em hexadecimal representa o decimal 
+1674:  BTFSS  26.1
+1676:  BRA    16F6
+1678:  BCF    26.1
+....................                 send_hex(le_rtc(hora)); swputc (':'); 
+167A:  MOVLW  02
+167C:  MOVWF  27
+167E:  RCALL  1460
+1680:  MOVFF  01,27
+1684:  MOVFF  01,28
+1688:  RCALL  1498
+168A:  MOVLW  3A
+168C:  MOVWF  2B
+168E:  RCALL  148C
+....................                 send_hex(le_rtc(min));  swputc (':'); 
+1690:  MOVLW  01
+1692:  MOVWF  27
+1694:  RCALL  1460
+1696:  MOVFF  01,27
+169A:  MOVFF  01,28
+169E:  RCALL  1498
+16A0:  MOVLW  3A
+16A2:  MOVWF  2B
+16A4:  RCALL  148C
+....................                 send_hex(le_rtc(seg));  swputc (' '); 
+16A6:  CLRF   27
+16A8:  RCALL  1460
+16AA:  MOVFF  01,27
+16AE:  MOVFF  01,28
+16B2:  RCALL  1498
+16B4:  MOVLW  20
+16B6:  MOVWF  2B
+16B8:  RCALL  148C
+....................                 send_hex(le_rtc(dia));  swputc ('/'); 
+16BA:  MOVLW  04
+16BC:  MOVWF  27
+16BE:  RCALL  1460
+16C0:  MOVFF  01,27
+16C4:  MOVFF  01,28
+16C8:  RCALL  1498
+16CA:  MOVLW  2F
+16CC:  MOVWF  2B
+16CE:  RCALL  148C
+....................                 send_hex(le_rtc(mes));  swputc ('/'); 
+16D0:  MOVLW  05
+16D2:  MOVWF  27
+16D4:  RCALL  1460
+16D6:  MOVFF  01,27
+16DA:  MOVFF  01,28
+16DE:  RCALL  1498
+16E0:  MOVLW  2F
+16E2:  MOVWF  2B
+16E4:  RCALL  148C
+....................                 send_hex(le_rtc(ano)); 
+16E6:  MOVLW  06
+16E8:  MOVWF  27
+16EA:  RCALL  1460
+16EC:  MOVFF  01,27
+16F0:  MOVFF  01,28
+16F4:  RCALL  1498
+....................                       } 
+....................         if(input(pin_e3)==0){send_hex(le_eeprom(0,1000));} //teste eeprom i2c 
+16F6:  BSF    F96.3
+16F8:  BTFSC  F84.3
+16FA:  BRA    1712
+16FC:  CLRF   27
+16FE:  MOVLW  03
+1700:  MOVWF  29
+1702:  MOVLW  E8
+1704:  MOVWF  28
+1706:  BRA    14D0
+1708:  MOVFF  01,27
+170C:  MOVFF  01,28
+1710:  RCALL  1498
+....................         escreve_eeprom(0,1000, le_rtc(seg)); 
+1712:  CLRF   27
+1714:  RCALL  1460
+1716:  MOVFF  01,27
+171A:  CLRF   28
+171C:  MOVLW  03
+171E:  MOVWF  2A
+1720:  MOVLW  E8
+1722:  MOVWF  29
+1724:  MOVFF  01,2B
+1728:  BRA    1522
+....................  
+....................         output_toggle(pin_b7); 
+172A:  BCF    F93.7
+172C:  BTG    F8A.7
+....................         delay_ms(1000); 
+172E:  MOVLW  04
+1730:  MOVWF  27
+1732:  MOVLW  FA
+1734:  MOVWF  2C
+1736:  RCALL  13A2
+1738:  DECFSZ 27,F
+173A:  BRA    1732
+....................              } 
+173C:  BRA    15DE
+.................... } 
+....................  
+173E:  SLEEP 
+
+Configuration Fuses:
+   Word  1: 0E24   NOIESO NOFCMEN HSPLL PLL5 CPUDIV1 USBDIV
+   Word  2: 1E3E   BROWNOUT NOWDT BORV20 PUT WDT32768 VREGEN
+   Word  3: 8300   PBADEN CCP2C1 MCLR NOLPT1OSC RESERVED
+   Word  4: 0081   STVREN NODEBUG NOLVP NOXINST NOICPRT RESERVED
+   Word  5: C00F   NOPROTECT NOCPD NOCPB
+   Word  6: E00F   NOWRT NOWRTD NOWRTC NOWRTB
+   Word  7: 400F   NOEBTR NOEBTRB
